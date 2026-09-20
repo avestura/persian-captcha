@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persian Captcha &mdash; demo</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7fa; --fg: #14171f; --muted: #5d6474;
+    --card: #ffffff; --border: #dfe3ec; --accent: #1a6f8c;
+    --ok: #157a4d; --bad: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12141a; --fg:#eef0f5; --muted:#9aa3b5; --card:#1a1d25;
+            --border:#2e3441; --accent:#4fb3d0; --ok:#56c38c; --bad:#f07167; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 16px; background:var(--bg); color:var(--fg);
+         font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 620px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.lede { margin: 0 0 24px; color: var(--muted); }
+  .card { background:var(--card); border:1px solid var(--border);
+          border-radius:14px; padding:20px; margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .tabs a { padding:6px 12px; border:1px solid var(--border); border-radius:999px;
+            text-decoration:none; color:var(--fg); font-size:13px; }
+  .tabs a[aria-current="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  label { display:block; font-weight:600; font-size:13px; margin-bottom:6px; }
+  textarea { width:100%; min-height:84px; padding:10px; border-radius:9px;
+             border:1px solid var(--border); background:var(--bg); color:var(--fg);
+             font:inherit; resize:vertical; }
+  button[type=submit] { margin-top:14px; min-height:40px; padding:0 20px; border:0;
+             border-radius:9px; background:var(--accent); color:#fff; font:inherit;
+             font-weight:600; cursor:pointer; }
+  button[type=submit]:disabled { opacity:.45; cursor:not-allowed; }
+  .pcaptcha { margin: 16px 0 4px; }
+  pre { margin:0; padding:14px; border-radius:9px; background:var(--bg);
+        border:1px solid var(--border); overflow:auto; font-size:13px; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  .meta { font-size:13px; color:var(--muted); }
+  code { font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Persian Captcha</h1>
+  <p class="lede">A demo of the widget and the server-side verification round trip.</p>
+
+  <nav class="tabs">
+    <a href="?site=en" aria-current="{{if eq .Variant "en"}}true{{else}}false{{end}}">English</a>
+    <a href="?site=fa" aria-current="{{if eq .Variant "fa"}}true{{else}}false{{end}}">فارسی</a>
+    <a href="?site=hard" aria-current="{{if eq .Variant "hard"}}true{{else}}false{{end}}">Always challenge</a>
+    <a href="?site={{.Variant}}&amp;theme=light">Light</a>
+    <a href="?site={{.Variant}}&amp;theme=dark">Dark</a>
+  </nav>
+
+  <form class="card" id="form">
+    <input type="hidden" name="site" value="{{.Variant}}">
+    <label for="message">Leave a message</label>
+    <textarea id="message" name="message" placeholder="Anything at all…"></textarea>
+
+    <div class="pcaptcha"
+         data-sitekey="{{.SiteKey}}"
+         data-locale="{{.Locale}}"
+         {{if .Theme}}data-theme="{{.Theme}}"{{end}}
+         data-callback="onVerified"
+         data-expired-callback="onExpired"
+         data-error-callback="onError"></div>
+
+    <button type="submit" id="submit" disabled>Send</button>
+    <p class="meta" id="state">Solve the captcha to enable the button.</p>
+  </form>
+
+  <div class="card">
+    <strong>Server reply</strong>
+    <p class="meta">What <code>POST /v1/siteverify</code> told the demo backend.</p>
+    <pre id="out">(nothing yet)</pre>
+  </div>
+</main>
+
+<script>
+  // These three are named in the data-* attributes above, which is the
+  // no-JavaScript-required integration path.
+  function onVerified() {
+    document.getElementById('submit').disabled = false;
+    setState('Verified. You can send the form.', 'ok');
+  }
+  function onExpired() {
+    document.getElementById('submit').disabled = true;
+    setState('The token expired. Solve it again.', 'bad');
+  }
+  function onError(code) {
+    document.getElementById('submit').disabled = true;
+    setState('Captcha error: ' + code, 'bad');
+  }
+  function setState(text, cls) {
+    const el = document.getElementById('state');
+    el.textContent = text;
+    el.className = 'meta ' + (cls || '');
+  }
+
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const out = document.getElementById('out');
+    out.textContent = 'verifying…';
+    try {
+      const res = await fetch('/submit', {
+        method: 'POST',
+        body: new FormData(e.target),
+      });
+      out.textContent = JSON.stringify(await res.json(), null, 2);
+      out.className = res.ok ? 'ok' : 'bad';
+    } catch (err) {
+      out.textContent = String(err);
+      out.className = 'bad';
+    }
+    // A token is single use: once the backend has spent it, the widget has
+    // to be reset before the form can be sent again.
+    window.PersianCaptcha.reset();
+    document.getElementById('submit').disabled = true;
+    setState('Token spent. Solve the captcha again to resend.');
+  });
+</script>
+<script src="{{.CaptchaBase}}/v1/widget.js" async defer></script>
+</body>
+</html>

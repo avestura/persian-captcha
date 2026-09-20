@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="{{.LocaleTag}}" dir="{{.Dir}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="{{.Base}}/frame.css?v={{.Version}}">
+{{if .FontURL}}<style>
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("{{.FontURL}}") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+</style>{{end}}
+</head>
+<body class="pc-body" data-theme="{{.Theme}}">
+<div id="pc-root" class="pc-root"></div>
+<script nonce="{{.Nonce}}">window.__PC_BOOT__ = {{.Boot}};</script>
+<script nonce="{{.Nonce}}" src="{{.Base}}/frame.js?v={{.Version}}"></script>
+</body>
+</html>

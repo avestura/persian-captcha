@@ -1,0 +1,69 @@
+# A two-instance deployment sharing one Redis, which is the arrangement the
+# service is actually designed for: a visitor may start a challenge on one
+# instance and finish it on another, and with the in-memory store that would
+# fail. Run `docker compose up --build` and open http://localhost:8080.
+
+services:
+  captcha:
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION:-dev}
+    ports:
+      - "8080:8080"
+    environment:
+      PCAPTCHA_LISTEN: ":8080"
+      PCAPTCHA_REDIS_ADDR: "redis:6379"
+      PCAPTCHA_LOG_LEVEL: "info"
+      # Behind the compose network there is no proxy, so forwarded headers
+      # stay untrusted. Set this to true only when something you control
+      # terminates TLS in front of the service and rewrites the header.
+      PCAPTCHA_TRUST_PROXY: "false"
+    volumes:
+      # Site keys live in the mounted file. Changes to it are picked up
+      # without a restart.
+      - ./captcha.example.yaml:/etc/captcha/captcha.yaml:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      # The image is distroless and has no shell or curl, so the binary checks
+      # itself.
+      test: ["CMD", "/captchad", "-config", "/etc/captcha/captcha.yaml", "-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    # Sessions and tokens live for minutes and are all reconstructible by the
+    # visitor simply trying again, so there is nothing here worth writing to
+    # disk. Persistence is disabled and memory is capped.
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # The demo site, so the compose stack is usable end to end. Remove this
+  # service for a real deployment.
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    ports:
+      - "5173:5173"
+    environment:
+      DEMO_CAPTCHA_BASE: "http://localhost:8080"
+    depends_on:
+      - captcha
+    restart: unless-stopped

@@ -1,0 +1,8 @@
+# The compiled browser bundles in web/dist are committed on purpose: see
+# web/build.mjs. Everything here is genuinely generated or local.
+node_modules/
+/preview/
+/captcha.yaml
+*.exe
+*.test
+*.out

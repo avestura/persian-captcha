@@ -1,0 +1,81 @@
+# persian-captcha service configuration.
+#
+# Every value here can also be supplied through the environment; see the
+# README for the variable names. The file is re-read when it changes on disk,
+# so site keys and origins can be rotated without a restart.
+
+listen: ":8080"
+base_url: "http://localhost:8080"
+
+# Set to true only when the service sits behind a proxy you control. It makes
+# the service trust X-Forwarded-For, and trusting that header from an
+# untrusted source lets anyone forge their address and slip every rate limit.
+trust_proxy_headers: false
+
+log_level: "info"
+
+# How long a visitor has to finish a challenge, and how long the resulting
+# token stays redeemable at /v1/siteverify.
+session_ttl: "5m"
+token_ttl: "5m"
+
+# Used when a site declares no locale of its own and the browser asks for
+# nothing recognisable.
+default_locale: "en"
+
+store:
+  # "memory" is fine for a single instance. Use "redis" as soon as there is
+  # more than one, or a visitor who starts on one node cannot finish on
+  # another.
+  driver: "memory"
+  redis:
+    addr: "127.0.0.1:6379"
+    password: ""
+    db: 0
+    prefix: "pcaptcha:"
+
+# Fixed windows, all counted per minute.
+rate_limits:
+  session_per_ip_per_min: 30
+  solve_per_ip_per_min: 90
+  verify_per_secret_per_min: 1200
+  failures_per_ip_per_min: 20
+
+sites:
+  - name: "Demo (English)"
+    key: "pc_site_demo_en"
+    secret: "pc_secret_demo_en_change_me"
+    # An empty list means any origin may embed this key, which is only
+    # reasonable in development. In production, list the exact origins.
+    allowed_origins:
+      - "http://localhost:8080"
+      - "http://localhost:5173"
+    locale: "en"
+    theme: "auto"
+    difficulty: "normal"
+    # Which puzzles this site may show. Omit to allow all four.
+    challenges: ["slider_jigsaw", "rotate", "click_order", "drag_drop"]
+    max_attempts: 4
+    # Fraction of visitors who see a puzzle even when their passive signals
+    # look clean. Passive signals are cheap to fake, so never trusting them
+    # completely is the point of this setting.
+    challenge_rate: 0.25
+
+  - name: "Demo (Persian)"
+    key: "pc_site_demo_fa"
+    secret: "pc_secret_demo_fa_change_me"
+    allowed_origins:
+      - "http://localhost:8080"
+      - "http://localhost:5173"
+    locale: "fa"
+    difficulty: "normal"
+    max_attempts: 4
+
+  - name: "Demo (always challenge)"
+    key: "pc_site_demo_hard"
+    secret: "pc_secret_demo_hard_change_me"
+    allowed_origins: ["*"]
+    locale: "en"
+    difficulty: "hard"
+    always_challenge: true
+    max_attempts: 5

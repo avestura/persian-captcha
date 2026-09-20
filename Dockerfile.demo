@@ -1,0 +1,20 @@
+# The demo site from cmd/demo, so `docker compose up` gives something to click.
+# It is a development aid and has no place in a production deployment.
+
+FROM golang:1.24-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum* ./
+RUN go mod download
+COPY . .
+ENV CGO_ENABLED=0
+RUN go build -trimpath -ldflags "-s -w" -o /out/demo ./cmd/demo
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /out/demo /demo
+EXPOSE 5173
+USER nonroot:nonroot
+# The captcha base URL must be one the *browser* can reach, not one that only
+# resolves inside the compose network: the widget script is loaded by the
+# visitor's browser, not by this container.
+ENTRYPOINT ["/demo", "-listen", ":5173"]
+CMD ["-captcha", "http://localhost:8080"]

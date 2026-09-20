@@ -1,0 +1,16 @@
+{
+  "name": "persian-captcha-packages",
+  "private": true,
+  "description": "Framework wrappers for the Persian Captcha widget. A workspace so both share one esbuild and one TypeScript.",
+  "type": "module",
+  "workspaces": ["react", "vue"],
+  "scripts": {
+    "build": "node build.mjs react && node build.mjs vue",
+    "types": "npm run types -w @persian-captcha/react && npm run types -w @persian-captcha/vue",
+    "check": "npm run check --workspaces"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}
