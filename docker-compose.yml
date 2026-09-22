@@ -1,7 +1,12 @@
-# A two-instance deployment sharing one Redis, which is the arrangement the
-# service is actually designed for: a visitor may start a challenge on one
-# instance and finish it on another, and with the in-memory store that would
-# fail. Run `docker compose up --build` and open http://localhost:8080.
+# The deployment arrangement: the service behind Redis, which is what more
+# than one instance requires. A visitor may start a challenge on one instance
+# and finish it on another, and with the in-memory store that would fail.
+# Adding instances means putting a load balancer in front and dropping the
+# fixed host port below, which can only belong to one container.
+#
+# There is nothing to click here: this file carries no demo site. For that,
+# use docker-compose.demo.yml, which runs the service alongside a page
+# showing every challenge type.
 
 services:
   captcha:
@@ -52,18 +57,4 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    restart: unless-stopped
-
-  # The demo site, so the compose stack is usable end to end. Remove this
-  # service for a real deployment.
-  demo:
-    build:
-      context: .
-      dockerfile: Dockerfile.demo
-    ports:
-      - "5173:5173"
-    environment:
-      DEMO_CAPTCHA_BASE: "http://localhost:8080"
-    depends_on:
-      - captcha
     restart: unless-stopped

@@ -12,6 +12,7 @@
 
 import { build, context } from 'esbuild';
 import { mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 
 const watch = process.argv.includes('--watch');
 const dev = watch || process.argv.includes('--dev');
@@ -30,6 +31,8 @@ const common = {
   legalComments: 'none',
   logLevel: 'info',
 };
+
+const hasSite = existsSync('../site/assets/preview');
 
 /** Each entry is a standalone script: no shared chunks, no module loader. */
 const builds = [
@@ -61,6 +64,34 @@ const builds = [
     entryPoints: ['src/frame.css'],
     outfile: 'dist/frame.css',
   },
+
+  // The marketing site in site/ is not part of the service and is not
+  // embedded in the binary, so its two outputs are written straight into the
+  // published directory rather than into dist/. They are committed like the
+  // rest: GitHub Pages serves the folder as it stands, with no build step.
+  //
+  // Skipped when site/ is absent, because the container image builds this
+  // directory on its own (see the web stage in Dockerfile) and has no reason
+  // to carry a marketing page into a service binary. The preview entry
+  // imports the locale bundles and challenge fixtures from outside web/, so
+  // attempting it there would fail rather than merely waste a few
+  // milliseconds.
+  ...(hasSite ? [{
+    ...common,
+    entryPoints: ['src/site/preview.ts'],
+    outfile: '../site/assets/preview.js',
+    format: 'iife',
+  },
+  {
+    ...common,
+    entryPoints: ['src/frame.css'],
+    outfile: '../site/assets/pcaptcha-frame.css',
+    // The site is built to the Boxy design system, whose linter would object
+    // to the widget's own rounding and shadows. They are not the site's
+    // design to make: this is the product's stylesheet, vendored verbatim so
+    // the previews look exactly like a deployment.
+    banner: { css: '/* boxy-ignore-file - the widget stylesheet, built from web/src/frame.css */' },
+  }] : []),
 ];
 
 if (watch) {
@@ -70,4 +101,5 @@ if (watch) {
 } else {
   await Promise.all(builds.map((options) => build(options)));
   console.log('built dist/widget.js, dist/frame.js, dist/pow.js, dist/frame.css');
+  if (hasSite) console.log('built ../site/assets/preview.js, ../site/assets/pcaptcha-frame.css');
 }

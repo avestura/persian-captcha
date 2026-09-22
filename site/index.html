@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en" data-mode="blueprint" data-density="compact">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persian Captcha — a captcha service you host yourself</title>
+<meta name="description" content="Five interactive challenges, a proof of work on every attempt, behavioural scoring and a real accessible fallback — in one Go binary with no dependencies and no tracking. Try every challenge here.">
+<meta property="og:title" content="Persian Captcha">
+<meta property="og:description" content="A self-hosted captcha service with five interactive challenges, Persian and English, and no tracking. Try every challenge on the page.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2.5' y='2.5' width='11' height='11' fill='none' stroke='%230f62fe' stroke-width='2'/%3E%3Cpath d='M6 8.5l1.6 1.6L11 6.5' fill='none' stroke='%230f62fe' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/boxy.css">
+<!-- The widget's own stylesheet, built from web/src/frame.css. It is loaded
+     before site.css so the page can take back the html/body rules it sets
+     for the iframe it normally owns. -->
+<link rel="stylesheet" href="assets/pcaptcha-frame.css">
+<link rel="stylesheet" href="assets/site.css">
+<script>
+  // Applied before first paint so a dark visitor never sees a white flash.
+  try {
+    var saved = localStorage.getItem('pcaptcha:theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="site-head__inner">
+    <a class="mark" href="#top"><span class="mark__glyph" aria-hidden="true"></span>Persian Captcha</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#challenges">Challenges</a>
+      <a href="#flow">How it works</a>
+      <a href="#integrate">Integrate</a>
+      <a href="#deploy">Deploy</a>
+    </nav>
+    <span class="spacer"></span>
+    <div class="head-tools">
+      <button class="bx-btn bx-btn--sm" id="theme" type="button" aria-label="Switch theme">
+        <span class="bx-mono" id="theme-label">auto</span>
+      </button>
+      <a class="bx-btn bx-btn--sm" href="https://github.com/avestura/persian-captcha">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<div class="page" id="top">
+<main id="main">
+
+  <!-- ===================================================== 01 / HERO ==== -->
+  <section class="section hero bx-grid-bg">
+    <div class="wrap">
+      <div class="hero__body">
+        <p class="bx-label">01 / Self-hosted human verification</p>
+        <h1>Prove they are human without telling anyone else</h1>
+        <p class="hero__sub lede">
+          Five interactive challenges, a proof of work on every attempt, and
+          behavioural scoring that grades how an answer was produced rather
+          than only what it was. One Go binary, no external dependencies, no
+          cookies and no fingerprinting — on your own hardware.
+        </p>
+
+        <div class="bx-btn-group hero__actions">
+          <a class="bx-btn bx-btn--primary bx-btn--lg" href="#challenges">Try the challenges</a>
+          <a class="bx-btn bx-btn--lg" href="https://github.com/avestura/persian-captcha">Read the source</a>
+        </div>
+
+        <p class="bx-label hero__meta">
+          <span>MIT licensed</span>
+          <span>&middot;</span>
+          <span>English &amp; Persian, RTL included</span>
+          <span>&middot;</span>
+          <span>Drop-in for reCAPTCHA and hCaptcha</span>
+        </p>
+      </div>
+
+      <dl class="bx-collapse stats">
+        <div>
+          <dt class="bx-label">Challenge types</dt>
+          <dd>5</dd>
+        </div>
+        <div>
+          <dt class="bx-label">External Go dependencies</dt>
+          <dd>0</dd>
+        </div>
+        <div>
+          <dt class="bx-label">Script on the host page</dt>
+          <dd>5.6<span class="unit"> kB</span></dd>
+        </div>
+        <div>
+          <dt class="bx-label">Default proof of work</dt>
+          <dd>16<span class="unit"> bits</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- =============================================== 02 / CHALLENGES ==== -->
+  <section class="section" id="challenges">
+    <div class="wrap">
+      <div class="head-block">
+        <p class="bx-label">02 / What your visitors see</p>
+        <h2>Every challenge, running right here</h2>
+        <p>
+          These are not screenshots. Each panel below is the component the
+          service ships, mounted against artwork a real deployment generated,
+          so what you drag on this page is what a visitor drags on yours.
+          Switch the language in the panel to see the Persian side.
+        </p>
+      </div>
+
+      <div class="demo">
+        <div class="bx-tabs" role="tablist" aria-label="Challenge type">
+          <button class="bx-tab" type="button" role="tab" data-preview-tab="slider_jigsaw"
+                  aria-selected="true" aria-controls="stage">Slider jigsaw</button>
+          <button class="bx-tab" type="button" role="tab" data-preview-tab="rotate"
+                  aria-selected="false" aria-controls="stage">Rotate</button>
+          <button class="bx-tab" type="button" role="tab" data-preview-tab="click_order"
+                  aria-selected="false" aria-controls="stage">Click in order</button>
+          <button class="bx-tab" type="button" role="tab" data-preview-tab="drag_drop"
+                  aria-selected="false" aria-controls="stage">Drag and drop</button>
+          <button class="bx-tab" type="button" role="tab" data-preview-tab="accessible"
+                  aria-selected="false" aria-controls="stage">Accessible question</button>
+        </div>
+
+        <div class="demo__body">
+          <div class="demo__stage" id="stage" data-preview-stage role="tabpanel"
+               aria-label="Challenge preview"></div>
+
+          <aside class="demo__notes">
+            <div data-preview-note="slider_jigsaw">
+              <h3>Slider jigsaw</h3>
+              <p>
+                A piece is cut out of a generated background and has to be slid
+                back into the notch it came from. The board and the piece are
+                two images; the geometry that connects them never leaves the
+                server.
+              </p>
+              <dl>
+                <dt>Graded on</dt>
+                <dd>Final offset, within 6 px at the default difficulty.</dd>
+                <dt>Keyboard</dt>
+                <dd>Arrow keys move the handle, and score the same as a drag.</dd>
+                <dt>Artwork</dt>
+                <dd>Six geometric styles over eight palettes named for Persian pigments — lajevard, zaferan, anaar.</dd>
+              </dl>
+            </div>
+
+            <div data-preview-note="rotate" hidden>
+              <h3>Rotate</h3>
+              <p>
+                A disc is handed over at a random angle and has to be turned
+                upright. There is no text to read and nothing to recognise —
+                which is why it travels well across languages.
+              </p>
+              <dl>
+                <dt>Graded on</dt>
+                <dd>Whether the correction cancels the offset, within 10°.</dd>
+                <dt>Keyboard</dt>
+                <dd>Arrow keys turn the disc in 2° steps.</dd>
+                <dt>Artwork</dt>
+                <dd>A girih emblem drawn from the session seed, so no two discs repeat.</dd>
+              </dl>
+            </div>
+
+            <div data-preview-note="click_order" hidden>
+              <h3>Click in order</h3>
+              <p>
+                Shapes are scattered over a background and three of them have
+                to be selected in a stated order. Ordering is what makes it
+                awkward to automate: recognising a star is easy, knowing it is
+                the second one wanted is the part that costs.
+              </p>
+              <dl>
+                <dt>Graded on</dt>
+                <dd>Each click landing within 1.3 icon radii, in sequence.</dd>
+                <dt>Keyboard</dt>
+                <dd>A crosshair moves with the arrow keys; Enter selects.</dd>
+                <dt>Prompt</dt>
+                <dd>Shape names are translated, never drawn into the image.</dd>
+              </dl>
+            </div>
+
+            <div data-preview-note="drag_drop" hidden>
+              <h3>Drag and drop</h3>
+              <p>
+                Three shapes sit in a tray under outlines cut into the board.
+                Each one has to be carried to the outline that matches it —
+                the most physical of the four, and the one that produces the
+                richest motion to grade.
+              </p>
+              <dl>
+                <dt>Graded on</dt>
+                <dd>Every piece centred within 0.8 of the slot radius.</dd>
+                <dt>Keyboard</dt>
+                <dd>Tab picks a shape up, arrows move it, Enter drops it.</dd>
+                <dt>Difficulty</dt>
+                <dd>Adds pieces and tightens the tolerance rather than blurring the image.</dd>
+              </dl>
+            </div>
+
+            <div data-preview-note="accessible" hidden>
+              <h3>Accessible question</h3>
+              <p>
+                Sliders and drag targets are unusable with a screen reader, so
+                every puzzle carries a link to this: a short localised question,
+                answerable from the keyboard alone. It is offered, never
+                imposed — no site key can force it, and asking for it is never
+                rationed.
+              </p>
+              <dl>
+                <dt>Graded on</dt>
+                <dd>The chosen answer, and the proof of work that came with it.</dd>
+                <dt>Not graded on</dt>
+                <dd>Motion. Holding this to a pointer threshold would break it for the people who need it.</dd>
+                <dt>Content</dt>
+                <dd>Arithmetic and category questions, generated per session from the locale's own word list.</dd>
+              </dl>
+            </div>
+          </aside>
+        </div>
+
+        <p class="demo__caveat">
+          <span class="bx-tag">Preview</span>
+          <span>
+            This page has no service behind it, so it grades in your browser
+            and the answers are in the bundle. A deployment works the other way
+            round: the puzzle is generated server-side, the artwork is redrawn
+            from a seed the browser never sees, and the answer is graded by
+            <code>/v1/solve</code> — which is also where the proof of work and
+            the motion trace are checked.
+          </span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 03 / FLOW ==== -->
+  <section class="section" id="flow">
+    <div class="wrap">
+      <div class="head-block">
+        <p class="bx-label">03 / The round trip</p>
+        <h2>What happens between the click and the token</h2>
+        <p>
+          Most visitors never see a puzzle. The interactive challenge is the
+          expensive path, kept for the sessions that have earned it.
+        </p>
+      </div>
+
+      <div class="bx-collapse cells">
+        <div>
+          <span class="num">01</span>
+          <h3>The widget loads</h3>
+          <p>
+            One script on your page creates an iframe pointing at the captcha
+            service. The challenge runs on the <em>service's</em> origin, so
+            the host page cannot read the artwork, inspect the DOM or
+            synthesise the events that solve it.
+          </p>
+        </div>
+        <div>
+          <span class="num">02</span>
+          <h3>The browser pays first</h3>
+          <p>
+            Opening a session hands back a proof of work. A few tens of
+            milliseconds for one visitor; a real bill for anyone solving
+            captchas in bulk, and it escalates with every failed attempt.
+          </p>
+        </div>
+        <div>
+          <span class="num">03</span>
+          <h3>Signals are scored</h3>
+          <p>
+            A narrow set of environment signals is weighed — no canvas or WebGL
+            fingerprinting, no font probing, nothing that could identify the
+            same person on another site.
+          </p>
+        </div>
+        <div>
+          <span class="num">04</span>
+          <h3>A puzzle, or not</h3>
+          <p>
+            A clean session passes without seeing anything. A suspicious one
+            gets a challenge, and a fraction of the clean ones do too — because
+            a defence that never fires is one an attacker can plan around.
+          </p>
+        </div>
+        <div>
+          <span class="num">05</span>
+          <h3>The answer is graded twice</h3>
+          <p>
+            Once on geometry, once on the motion that produced it. A script
+            that computes the right slider offset and delivers it in a straight
+            line at even intervals is refused.
+          </p>
+        </div>
+        <div>
+          <span class="num">06</span>
+          <h3>Your backend decides</h3>
+          <p>
+            A pass mints a single-use token. Your server exchanges it at
+            <code>/v1/siteverify</code> for a verdict and a score, and refuses
+            the request unless it comes back successful.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= 04 / PROPERTIES == -->
+  <section class="section">
+    <div class="wrap">
+      <div class="head-block">
+        <p class="bx-label">04 / Properties</p>
+        <h2>Deliberate choices, not defaults</h2>
+      </div>
+
+      <div class="bx-collapse cells">
+        <div>
+          <h3>Nothing to track with</h3>
+          <p>
+            No cookies, no cross-site identifier, no fingerprinting. Addresses
+            are hashed with a per-process secret and everything expires within
+            minutes.
+          </p>
+        </div>
+        <div>
+          <h3>A genuine accessible path</h3>
+          <p>
+            A keyboard-operable, localised question sits behind a link on every
+            challenge — translated, not a CAPTCHA audio file nobody can parse.
+          </p>
+        </div>
+        <div>
+          <h3>Persian as a first language</h3>
+          <p>
+            Not a translation bolted on. The layout mirrors, the numerals are
+            Persian where a Persian reader expects them, and the artwork comes
+            from girih and tilework rather than clip art.
+          </p>
+        </div>
+        <div>
+          <h3>Sessions cost a kilobyte</h3>
+          <p>
+            Artwork is never stored. The seed and the geometry are, and any
+            image is redrawn deterministically when the browser asks for it.
+          </p>
+        </div>
+        <div>
+          <h3>One binary, or one container</h3>
+          <p>
+            Everything is embedded: the widget, the fonts, the locale bundles,
+            the renderer. In-memory storage for a single instance, Redis for
+            more — spoken directly, with no client library.
+          </p>
+        </div>
+        <div>
+          <h3>A familiar shape</h3>
+          <p>
+            The widget API and the verification endpoint mirror reCAPTCHA and
+            hCaptcha closely enough that an existing integration usually needs
+            only its script tag and site key changed.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= 05 / INTEGRATE === -->
+  <section class="section" id="integrate">
+    <div class="wrap">
+      <div class="head-block">
+        <p class="bx-label">05 / Integrate</p>
+        <h2>Two steps, and one of them is a script tag</h2>
+        <p>
+          The widget adds a hidden <code>pcaptcha-response</code> field to the
+          surrounding form. Your server exchanges it for a verdict. Never trust
+          the browser's word that the captcha was solved.
+        </p>
+      </div>
+
+      <div class="bx-collapse cells cells--two">
+        <div>
+          <div class="code">
+            <div class="code__head">
+              <span class="bx-label">On the page</span>
+              <span class="bx-label">html</span>
+            </div>
+<pre>&lt;form method="post" action="/signup"&gt;
+  &lt;input name="email" type="email" required&gt;
+
+  &lt;div class="pcaptcha" data-sitekey="<b>YOUR_SITE_KEY</b>"&gt;&lt;/div&gt;
+
+  &lt;button type="submit"&gt;Sign up&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script src="https://captcha.example.com/v1/widget.js"
+        async defer&gt;&lt;/script&gt;</pre>
+          </div>
+        </div>
+        <div>
+          <div class="code">
+            <div class="code__head">
+              <span class="bx-label">On your server</span>
+              <span class="bx-label">go</span>
+            </div>
+<pre>form := url.Values{
+    "secret":   {os.Getenv("CAPTCHA_SECRET")},
+    "response": {r.FormValue("pcaptcha-response")},
+}
+res, err := http.PostForm(
+    "https://captcha.example.com/v1/siteverify", form)
+
+<i>// decode, and reject the request</i>
+<i>// unless success is true</i></pre>
+          </div>
+        </div>
+      </div>
+
+      <p class="lede rule-top">
+        React and Vue wrappers ship in the repository, and the verification
+        call is a plain form post — there is nothing to install on your
+        backend.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================================================== 06 / DEPLOY === -->
+  <section class="section" id="deploy">
+    <div class="wrap">
+      <div class="head-block">
+        <p class="bx-label">06 / Deploy</p>
+        <h2>Run the whole thing in one command</h2>
+        <p>
+          The demo stack brings up the service and a page carrying every
+          challenge type, each on its own site key, with the server-side
+          verification wired up behind every form.
+        </p>
+      </div>
+
+      <div class="bx-collapse cells cells--two">
+        <div>
+          <div class="code">
+            <div class="code__head">
+              <span class="bx-label">Demo stack</span>
+              <span class="bx-label">sh</span>
+            </div>
+<pre>git clone https://github.com/avestura/persian-captcha
+cd persian-captcha
+docker compose -f docker-compose.demo.yml up --build
+
+<i># the service on :8080</i>
+<i># every challenge on :5173</i></pre>
+          </div>
+        </div>
+        <div>
+          <div class="code">
+            <div class="code__head">
+              <span class="bx-label">Site keys</span>
+              <span class="bx-label">yaml</span>
+            </div>
+<pre>sites:
+  - name: "Your site"
+    key: "<b>pc_site_...</b>"
+    secret: "<b>pc_secret_...</b>"
+    allowed_origins: ["https://example.com"]
+    locale: "fa"
+    difficulty: "normal"
+    challenge_rate: 0.25</pre>
+          </div>
+        </div>
+      </div>
+
+      <p class="lede rule-top">
+        The configuration file is re-read when it changes, so keys and origins
+        rotate without a restart. Everything in it can come from the
+        environment instead, which means a container deployment needs no file
+        at all.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<section class="cta bx-inverse">
+  <div class="wrap cta__inner">
+    <div>
+      <h2>Clone it, run it, read all of it</h2>
+      <p>
+        Go with no external dependencies — not for HTTP, not for YAML, not for
+        Redis, not for image rendering. A dependency tree you can read in an
+        afternoon is worth more than the code it saves.
+      </p>
+    </div>
+    <div class="bx-btn-group">
+      <a class="bx-btn bx-btn--lg bx-btn--contrast" href="https://github.com/avestura/persian-captcha">Get the source</a>
+      <a class="bx-btn bx-btn--lg" href="https://github.com/avestura/persian-captcha/blob/master/docs/INTEGRATION.md">Integration guide</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-foot">
+  <div class="site-foot__inner">
+    <div>
+      <h2>Persian Captcha</h2>
+      <p class="lede" style="margin-block-start: var(--bx-space-3); max-width: 44ch">
+        An interactive captcha service that runs on your own infrastructure.
+      </p>
+    </div>
+    <div>
+      <p class="bx-label">Project</p>
+      <ul>
+        <li><a href="https://github.com/avestura/persian-captcha">Repository</a></li>
+        <li><a href="https://github.com/avestura/persian-captcha/blob/master/LICENSE">MIT licence</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="bx-label">Documentation</p>
+      <ul>
+        <li><a href="https://github.com/avestura/persian-captcha/blob/master/docs/API.md">HTTP API</a></li>
+        <li><a href="https://github.com/avestura/persian-captcha/blob/master/docs/INTEGRATION.md">Integration</a></li>
+        <li><a href="https://github.com/avestura/persian-captcha/blob/master/docs/SECURITY.md">Security model</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="bx-label">On this page</p>
+      <ul>
+        <li><a href="#challenges">Challenges</a></li>
+        <li><a href="#flow">How it works</a></li>
+        <li><a href="#deploy">Deploy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="site-foot__bar">
+    <span class="bx-label">No cookies &middot; no fingerprinting &middot; nothing to opt out of</span>
+    <span class="bx-label bx-mono">challenge fixtures: seed 7 &middot; difficulty normal</span>
+  </div>
+</footer>
+</div>
+
+<script src="assets/preview.js" defer></script>
+<script>
+  // Theme: light, dark, or whatever the browser asks for. Three states, one
+  // button, because a captcha that ignores a dark page looks pasted on.
+  (function () {
+    var order = ['auto', 'light', 'dark'];
+    var button = document.getElementById('theme');
+    var label = document.getElementById('theme-label');
+    function current() {
+      return document.documentElement.getAttribute('data-theme') || 'auto';
+    }
+    function apply(mode) {
+      if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', mode);
+      label.textContent = mode;
+      try {
+        if (mode === 'auto') localStorage.removeItem('pcaptcha:theme');
+        else localStorage.setItem('pcaptcha:theme', mode);
+      } catch (e) {}
+    }
+    apply(current());
+    button.addEventListener('click', function () {
+      apply(order[(order.indexOf(current()) + 1) % order.length]);
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+# Publishes site/ to GitHub Pages.
+#
+# The directory is served exactly as it is committed: index.html, the Boxy
+# stylesheet, the challenge fixtures, and the preview bundle that web/build.mjs
+# produces. There is no build step here on purpose — the same reasoning as
+# web/dist, which is committed so that `go build` alone yields a working
+# binary. What is published is what a contributor can open from disk.
+#
+# Enable it once under Settings -> Pages -> Source: GitHub Actions.
+
+name: pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and let a run in progress finish rather than
+# cancelling it: a half-deployed site is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The previews are the real widget components, so a stale bundle would
+      # show visitors a challenge that no longer matches the service. This
+      # rebuilds them and fails if the committed copy has drifted.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild the browser bundles
+        working-directory: web
+        run: |
+          npm ci --ignore-scripts || npm install --ignore-scripts
+          npm rebuild esbuild
+          npm run build
+      - name: Check the committed site assets are current
+        run: |
+          if ! git diff --exit-code -- site; then
+            echo "site/assets is out of date; run 'make web' and commit the result" >&2
+            exit 1
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

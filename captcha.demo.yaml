@@ -1,0 +1,130 @@
+# Configuration for the demo stack: `docker compose -f docker-compose.demo.yml
+# up --build`, or `go run ./cmd/captchad -config captcha.demo.yaml` alongside
+# `go run ./cmd/demo`.
+#
+# It differs from captcha.example.yaml in the way that matters: the demo site
+# keys each pin a single challenge kind and force a puzzle every time, so the
+# gallery on :5173 can show all five types side by side. A real site wants the
+# opposite — see captcha.example.yaml for a configuration worth copying.
+#
+# Every site here repeats the same origin list. That is deliberate: the
+# configuration parser is a small YAML subset with no anchors or aliases, so
+# there is nothing to share it with.
+
+listen: ":8080"
+base_url: "http://localhost:8080"
+trust_proxy_headers: false
+log_level: "info"
+
+session_ttl: "5m"
+token_ttl: "5m"
+default_locale: "en"
+
+store:
+  # One instance, so memory is enough. docker-compose.yml shows the Redis
+  # arrangement that more than one instance requires.
+  driver: "memory"
+
+# Loosened well past the defaults, because the gallery puts nine widgets on a
+# single page, and one person clicking through them all looks — from the
+# service's point of view — like nine visitors sharing one address. A real
+# deployment should keep the tighter numbers in captcha.example.yaml.
+rate_limits:
+  session_per_ip_per_min: 120
+  solve_per_ip_per_min: 300
+  verify_per_secret_per_min: 1200
+  failures_per_ip_per_min: 60
+
+sites:
+  # ---- one site per challenge kind ----------------------------------------
+  #
+  # A `challenges` list with a single entry is what pins the kind, and
+  # always_challenge is what stops a clean-looking visitor from being waved
+  # through before the puzzle is ever drawn. The demo page is served from
+  # :5173 and the service from :8080; both spellings of the loopback address
+  # appear in every list because browsers treat them as different origins.
+
+  - name: "Demo: slider jigsaw"
+    key: "pc_site_demo_slider"
+    secret: "pc_secret_demo_slider_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    challenges: ["slider_jigsaw"]
+    always_challenge: true
+    max_attempts: 5
+
+  - name: "Demo: rotate"
+    key: "pc_site_demo_rotate"
+    secret: "pc_secret_demo_rotate_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    challenges: ["rotate"]
+    always_challenge: true
+    max_attempts: 5
+
+  - name: "Demo: click in order"
+    key: "pc_site_demo_click"
+    secret: "pc_secret_demo_click_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    challenges: ["click_order"]
+    always_challenge: true
+    max_attempts: 5
+
+  - name: "Demo: drag and drop"
+    key: "pc_site_demo_drag"
+    secret: "pc_secret_demo_drag_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    challenges: ["drag_drop"]
+    always_challenge: true
+    max_attempts: 5
+
+  # The accessible question is never handed out by configuration: it is the
+  # fallback behind the link on every puzzle, reached by a visitor asking for
+  # it. This site exists so the gallery has somewhere to point that at.
+  - name: "Demo: accessible fallback"
+    key: "pc_site_demo_accessible"
+    secret: "pc_secret_demo_accessible_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    always_challenge: true
+    max_attempts: 5
+
+  # ---- the same four puzzles at each difficulty ----------------------------
+
+  - name: "Demo: any puzzle, easy"
+    key: "pc_site_demo_level_easy"
+    secret: "pc_secret_demo_level_easy_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "easy"
+    always_challenge: true
+    max_attempts: 5
+
+  - name: "Demo: any puzzle, normal"
+    key: "pc_site_demo_level_normal"
+    secret: "pc_secret_demo_level_normal_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    always_challenge: true
+    max_attempts: 5
+
+  - name: "Demo: any puzzle, hard"
+    key: "pc_site_demo_level_hard"
+    secret: "pc_secret_demo_level_hard_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "hard"
+    always_challenge: true
+    max_attempts: 5
+
+  # ---- the arrangement a real site would use -------------------------------
+  #
+  # No forced puzzle: the passive signals decide, and a quarter of the
+  # visitors who look clean are shown one anyway.
+  - name: "Demo: adaptive"
+    key: "pc_site_demo_adaptive"
+    secret: "pc_secret_demo_adaptive_change_me"
+    allowed_origins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080"]
+    difficulty: "normal"
+    max_attempts: 4
+    challenge_rate: 0.25

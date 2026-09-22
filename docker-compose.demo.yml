@@ -1,0 +1,67 @@
+# The demo stack: the captcha service, and a site that embeds every challenge
+# it can hand out.
+#
+#   docker compose -f docker-compose.demo.yml up --build
+#   open http://localhost:5173
+#
+# Two containers and no Redis, because one instance keeps its sessions in
+# memory quite happily. docker-compose.yml is the other arrangement — the one
+# worth copying for a deployment — and it deliberately carries no demo site.
+
+services:
+  captcha:
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION:-demo}
+    ports:
+      # The browser loads widget.js from this port and the iframe runs on it,
+      # so it has to be published even though the demo container could reach
+      # the service over the compose network alone.
+      - "8080:8080"
+    environment:
+      PCAPTCHA_LISTEN: ":8080"
+      PCAPTCHA_CONFIG: "/etc/captcha/captcha.yaml"
+      # Debug logs one line per request, which is most of the point of
+      # watching a demo: the session, the assessment, the challenge and the
+      # verification all show up as they happen.
+      PCAPTCHA_LOG_LEVEL: "debug"
+      # Nothing terminates TLS in front of this, so forwarded headers stay
+      # untrusted: believing them would let any caller forge their address and
+      # walk through every per-address rate limit.
+      PCAPTCHA_TRUST_PROXY: "false"
+    volumes:
+      # The demo site keys, one per challenge kind. Edits are picked up
+      # without a restart, so a difficulty can be changed and the page
+      # reloaded.
+      - ./captcha.demo.yaml:/etc/captcha/captcha.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      # The image is distroless and has no shell or curl, so the binary checks
+      # itself.
+      test: ["CMD", "/captchad", "-config", "/etc/captcha/captcha.yaml", "-check"]
+      # Checked often, because the demo container waits for this to pass
+      # before it starts and a slow first probe is a slow `up`.
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    ports:
+      - "5173:5173"
+    # Two URLs for the same service, and under compose they have to differ.
+    # -captcha is written into a script tag and an iframe src, so it is
+    # resolved by the visitor's browser, which knows nothing about this
+    # network; -verify is dialled by the demo process itself, which cannot
+    # reach the published port as "localhost" because that name belongs to its
+    # own container. This replaces the image's CMD; -listen is in the
+    # entrypoint already.
+    command: ["-captcha", "http://localhost:8080", "-verify", "http://captcha:8080"]
+    depends_on:
+      captcha:
+        condition: service_healthy
+    restart: unless-stopped

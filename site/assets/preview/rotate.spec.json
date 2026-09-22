@@ -1,0 +1,9 @@
+{
+  "kind": "rotate",
+  "width": 320,
+  "height": 320,
+  "rotate": {
+    "radius": 156,
+    "stepDeg": 2
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "slider_jigsaw",
+  "width": 320,
+  "height": 200,
+  "slider": {
+    "pieceSize": 84,
+    "pieceTop": 64,
+    "travelMax": 236
+  }
+}

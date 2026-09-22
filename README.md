@@ -41,13 +41,34 @@ expects them. Adding a language is one JSON file.
 
 ## Try it
 
+Every challenge is playable in the browser, with no install, at
+<https://avestura.github.io/persian-captcha/>. The page runs the real widget
+components against fixed artwork, so what you drag there is what your visitors
+drag.
+
+To run the service itself:
+
 ```sh
-go run ./cmd/captchad -config captcha.example.yaml    # the service, :8080
+docker compose -f docker-compose.demo.yml up --build
+```
+
+Or, with a Go toolchain and no containers:
+
+```sh
+go run ./cmd/captchad -config captcha.demo.yaml       # the service, :8080
 go run ./cmd/demo                                     # a site using it, :5173
 ```
 
-Open <http://localhost:5173>. The tabs switch between an English site, a
-Persian one, and one configured to always show a puzzle.
+Either way, open <http://localhost:5173>. The page is a gallery: one widget
+per challenge kind, then the same puzzles at each difficulty, then one card
+configured the way a real site would be. Each card is its own form and is
+verified against its own secret. The site keys behind it live in
+`captcha.demo.yaml`, where each one is pinned to a single kind — which is what
+makes the page predictable, and is not something to copy into production.
+
+The accessible question is the one kind no site key can pin: it is offered
+behind a link on every puzzle rather than imposed, so its card asks you to
+follow that link.
 
 To see the artwork without running anything:
 
@@ -160,11 +181,15 @@ bundles. There is nothing else to deploy.
 go build -o captchad ./cmd/captchad
 ```
 
-Or with Docker, including a two-instance-plus-Redis arrangement:
+Or with Docker, in the Redis arrangement that more than one instance needs:
 
 ```sh
 docker compose up --build
 ```
+
+That file carries no demo site. `docker-compose.demo.yml` is the other one:
+the service plus the gallery page, on a single instance with the in-memory
+store.
 
 **Use Redis as soon as you run more than one instance.** With the in-memory
 store, a visitor who starts a challenge on one node and finishes on another
@@ -214,7 +239,7 @@ The Persian font is not committed; see `web/assets/fonts/README.md`, or run:
 
 ```
 cmd/captchad        the service
-cmd/demo            a site that embeds it, for local work
+cmd/demo            a site that embeds every challenge type, for local work
 cmd/preview         dumps sample challenge artwork to PNGs
 internal/challenge  generating and grading the four puzzles
 internal/imagegen   the procedural renderer: rasterizer, shapes, backgrounds
@@ -222,6 +247,7 @@ internal/scoring    behavioural and environment scoring
 internal/api        the HTTP surface
 web/src             the widget and the iframe application (TypeScript)
 packages/react|vue  optional framework wrappers
+site                the marketing page, published to GitHub Pages from master
 ```
 
 Go has no external dependencies at all — not for HTTP, not for YAML, not for

@@ -1,0 +1,13 @@
+{
+  "kind": "click_order",
+  "width": 320,
+  "height": 200,
+  "clickOrder": {
+    "sequence": [
+      "heart",
+      "flower",
+      "square"
+    ],
+    "radius": 21
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "kind": "drag_drop",
+  "width": 320,
+  "height": 200,
+  "dragDrop": {
+    "pieces": [
+      {
+        "id": 0,
+        "shape": "circle",
+        "asset": "piece0",
+        "startX": 27,
+        "startY": 148,
+        "size": 48
+      },
+      {
+        "id": 1,
+        "shape": "triangle",
+        "asset": "piece1",
+        "startX": 139,
+        "startY": 148,
+        "size": 48
+      },
+      {
+        "id": 2,
+        "shape": "square",
+        "asset": "piece2",
+        "startX": 239,
+        "startY": 148,
+        "size": 48
+      }
+    ],
+    "trayY": 144
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "rotate",
+  "seed": 7517478464726309039,
+  "level": "normal",
+  "w": 320,
+  "h": 320,
+  "rotate": {
+    "offsetDeg": 308.6,
+    "radius": 156,
+    "emblemSeed": 11335065583193126521,
+    "style": "girih",
+    "palette": "lajevard"
+  }
+}

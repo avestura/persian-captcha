@@ -1,0 +1,26 @@
+{
+  "kind": "accessible",
+  "width": 320,
+  "height": 200,
+  "accessible": {
+    "promptKey": "access.category.fruit",
+    "options": [
+      {
+        "id": "0",
+        "labelKey": "word.green"
+      },
+      {
+        "id": "1",
+        "labelKey": "word.chair"
+      },
+      {
+        "id": "2",
+        "labelKey": "word.airplane"
+      },
+      {
+        "id": "3",
+        "labelKey": "word.fig"
+      }
+    ]
+  }
+}

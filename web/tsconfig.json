@@ -12,6 +12,9 @@
     "exactOptionalPropertyTypes": false,
     "useDefineForClassFields": true,
     "isolatedModules": true,
+    // The site preview imports the locale bundles and the challenge fixtures
+    // as JSON, so that neither has to be copied to be used.
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true,
     "types": []

@@ -13,8 +13,9 @@ FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/demo /demo
 EXPOSE 5173
 USER nonroot:nonroot
-# The captcha base URL must be one the *browser* can reach, not one that only
-# resolves inside the compose network: the widget script is loaded by the
-# visitor's browser, not by this container.
+# -captcha must be a URL the *browser* can reach, because the widget script
+# and the iframe are loaded by the visitor, not by this container. -verify is
+# dialled by this process instead, so under compose it wants the service name
+# rather than localhost; see docker-compose.demo.yml.
 ENTRYPOINT ["/demo", "-listen", ":5173"]
 CMD ["-captcha", "http://localhost:8080"]

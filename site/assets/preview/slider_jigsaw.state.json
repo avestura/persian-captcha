@@ -1,0 +1,21 @@
+{
+  "kind": "slider_jigsaw",
+  "seed": 16430315078419425413,
+  "level": "normal",
+  "w": 320,
+  "h": 200,
+  "slider": {
+    "size": 50,
+    "margin": 17,
+    "targetX": 178,
+    "topY": 64,
+    "tabs": [
+      1,
+      1,
+      -1,
+      -1
+    ],
+    "style": "arches",
+    "palette": "banafsh"
+  }
+}

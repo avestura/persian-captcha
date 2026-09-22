@@ -1,0 +1,29 @@
+{
+  "kind": "accessible",
+  "seed": 8046609592414614061,
+  "level": "normal",
+  "w": 320,
+  "h": 200,
+  "access": {
+    "promptKey": "access.category.fruit",
+    "options": [
+      {
+        "id": "0",
+        "labelKey": "word.green"
+      },
+      {
+        "id": "1",
+        "labelKey": "word.chair"
+      },
+      {
+        "id": "2",
+        "labelKey": "word.airplane"
+      },
+      {
+        "id": "3",
+        "labelKey": "word.fig"
+      }
+    ],
+    "answerIdx": 3
+  }
+}

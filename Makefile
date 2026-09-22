@@ -38,16 +38,33 @@ packages: ## Build the React and Vue wrappers
 	cd packages && npm install && npm run build && npm run types
 
 .PHONY: run
-run: ## Run the service against the example configuration
-	go run ./cmd/captchad -config captcha.example.yaml
+run: ## Run the service with the demo site keys
+	go run ./cmd/captchad -config captcha.demo.yaml
 
 .PHONY: demo
 demo: ## Run the demo site (needs `make run` in another terminal)
 	go run ./cmd/demo
 
+.PHONY: demo-up
+demo-up: ## Run the service and the demo site in containers
+	docker compose -f docker-compose.demo.yml up --build
+
 .PHONY: preview
 preview: ## Dump sample challenge artwork to ./preview
 	go run ./cmd/preview -out ./preview
+
+.PHONY: site
+site: ## Serve the marketing site in site/ on :4173
+	cd site && (python3 -m http.server 4173 || python -m http.server 4173)
+
+# The site's interactive previews are the real challenge components driven by
+# artwork and specs generated once, from a fixed seed. Refresh them when the
+# renderer or a challenge's spec changes; `make web` then rebuilds the bundle
+# that reads them.
+.PHONY: site-fixtures
+site-fixtures: preview ## Refresh the challenge fixtures used by the site
+	cp preview/slider_jigsaw-board.png preview/slider_jigsaw-piece.png 	   preview/rotate-disc.png preview/click_order-board.png 	   preview/drag_drop-board.png preview/drag_drop-piece[0-2].png 	   site/assets/preview/
+	for kind in slider_jigsaw rotate click_order drag_drop accessible; do 		cp preview/$$kind.spec.json preview/$$kind.state.json site/assets/preview/; 	done
 
 .PHONY: fonts
 fonts: ## Download the Persian webfont into web/assets/fonts

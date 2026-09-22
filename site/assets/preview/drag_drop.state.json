@@ -1,0 +1,56 @@
+{
+  "kind": "drag_drop",
+  "seed": 1939484942836955869,
+  "level": "normal",
+  "w": 320,
+  "h": 200,
+  "drag": {
+    "slots": [
+      {
+        "shape": "circle",
+        "x": 233.59860620723816,
+        "y": 84.30954775824813,
+        "rot": 0.1818573852957142
+      },
+      {
+        "shape": "triangle",
+        "x": 59.57534836450499,
+        "y": 64.4484799217075,
+        "rot": 0.14049960575335424
+      },
+      {
+        "shape": "square",
+        "x": 169.10228357843596,
+        "y": 77.90228944417159,
+        "rot": 0.01757972799171803
+      }
+    ],
+    "pieces": [
+      {
+        "shape": "circle",
+        "slot": 0,
+        "startX": 27,
+        "startY": 148,
+        "tone": 4
+      },
+      {
+        "shape": "triangle",
+        "slot": 1,
+        "startX": 139,
+        "startY": 148,
+        "tone": 2
+      },
+      {
+        "shape": "square",
+        "slot": 2,
+        "startX": 239,
+        "startY": 148,
+        "tone": 2
+      }
+    ],
+    "radius": 20,
+    "pieceSize": 48,
+    "style": "girih",
+    "palette": "anaar"
+  }
+}

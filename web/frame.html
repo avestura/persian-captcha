@@ -1,5 +1,9 @@
 <!doctype html>
-<html lang="{{.LocaleTag}}" dir="{{.Dir}}">
+<!-- data-theme belongs on the root element, not on body: frame.css guards its
+     dark-mode block with :root:not([data-theme="light"]), and an attribute on
+     body would leave that guard permanently open, so a host asking for the
+     light theme would still get a dark widget under a dark system setting. -->
+<html lang="{{.LocaleTag}}" dir="{{.Dir}}" data-theme="{{.Theme}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -15,7 +19,7 @@
 }
 </style>{{end}}
 </head>
-<body class="pc-body" data-theme="{{.Theme}}">
+<body class="pc-body">
 <div id="pc-root" class="pc-root"></div>
 <script nonce="{{.Nonce}}">window.__PC_BOOT__ = {{.Boot}};</script>
 <script nonce="{{.Nonce}}" src="{{.Base}}/frame.js?v={{.Version}}"></script>

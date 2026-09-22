@@ -3,7 +3,8 @@
 node_modules
 web/node_modules
 preview
+site
 *.md
 !README.md
 Dockerfile*
-docker-compose.yml
+docker-compose*.yml
