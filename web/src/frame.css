@@ -448,10 +448,13 @@ html[lang="fa"] body {
 
 .pc-piece {
   position: absolute;
-  inset-inline-start: 0;
   /* The piece is positioned with `left` in script; RTL must not flip it,
-     because its coordinate is an offset into the image, not into the page. */
+     because its coordinate is an offset into the image, not into the page.
+     Use physical properties only: `inset-inline-start` would become
+     `right: 0` in RTL, and with `left`, `right` and `width` all set the
+     browser drops `left`, so the piece would stay pinned to the right edge. */
   left: 0;
+  right: auto;
   pointer-events: none;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
 }
